@@ -1,0 +1,23 @@
+# Messages
+messages:
+  # Command messages
+  no-permission: "&cYou don't have permission to use this command!"
+  sound-changed: "&aYour join sound has been changed to: &6{sound}"
+  sound-disabled: "&aYour join sound has been disabled."
+  sound-not-found: "&cSound not found: &6{sound}"
+  invalid-radius: "&cInvalid radius! Must be between {min} and {max}."
+  cooldown-active: "&cYou must wait {time} seconds before changing your sound again."
+  world-disabled: "&cJoin sounds are disabled in this world."
+
+  # GUI messages
+  gui-opened: "&aOpened sound selection menu."
+  sound-preview: "&7Click to preview this sound"
+  sound-select: "&7Click to select this sound"
+
+  # Admin messages
+  config-reloaded: "&aConfiguration reloaded successfully!"
+  player-sound-reset: "&aReset join sound for player: &6{player}"
+
+  # Error messages
+  player-not-found: "&cPlayer not found: &6{player}"
+  database-error: "&cDatabase error occurred. Check console for details."

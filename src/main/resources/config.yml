@@ -1,0 +1,129 @@
+# JoinSounds Configuration File
+# Plugin by tenshiku
+
+# General Settings
+general:
+  # Enable or disable the plugin
+  enabled: true
+  
+  # Plugin prefix for messages
+  prefix: "&6[JoinSounds] &f"
+  
+  # Debug mode - prints additional information to console
+  debug: false
+
+# Sound Settings
+sounds:
+  # Default sound radius in blocks (how far the sound can be heard)
+  default-radius: 16
+  
+  # Maximum radius that can be set (prevents server lag)
+  max-radius: 32
+  
+  # Minimum radius that can be set
+  min-radius: 5
+  
+  # Volume for join sounds (0.0 to 1.0)
+  volume: 0.8
+  
+  # Pitch for join sounds (0.5 to 2.0)
+  pitch: 1.0
+  
+  # Delay in ticks before playing sound after join (20 ticks = 1 second)
+  # Useful to ensure player is fully loaded
+  play-delay: 20
+  
+  # Play sound to the joining player as well
+  play-to-self: true
+
+# World Settings
+worlds:
+  # List of worlds where join sounds are enabled
+  # Leave empty to enable in all worlds
+  enabled-worlds: []
+  
+  # List of worlds where join sounds are disabled
+  disabled-worlds:
+    - "world_nether"
+    - "world_the_end"
+
+# Permission Settings
+permissions:
+  # Default permission for using join sounds
+  use-permission: "joinsounds.use"
+  
+  # Permission for admin commands
+  admin-permission: "joinsounds.admin"
+  
+  # Permission to bypass world restrictions
+  bypass-world-permission: "joinsounds.bypass.world"
+  
+  # Permission to use custom radius
+  custom-radius-permission: "joinsounds.radius.custom"
+
+# GUI Settings
+gui:
+  # Title of the sound selection GUI
+  title: "&6Choose Your Join Sound"
+  
+  # Size of the GUI (must be multiple of 9, max 54)
+  size: 27
+  
+  # Enable sound preview in GUI
+  enable-preview: true
+  
+  # Item to represent "no sound" option
+  no-sound-item:
+    material: "BARRIER"
+    name: "&cNo Sound"
+    lore:
+      - "&7Click to disable your join sound"
+
+# Database Settings
+storage:
+  # Storage type: YAML, SQLITE, MYSQL
+  type: "YAML"
+  
+  # Settings for YAML storage
+  yaml:
+    file-name: "playerdata.yml"
+  
+  # Settings for SQLite storage (if type is SQLITE)
+  sqlite:
+    file-name: "joinsounds.db"
+  
+  # Settings for MySQL storage (if type is MYSQL)
+  mysql:
+    host: "localhost"
+    port: 3306
+    database: "minecraft"
+    username: "root"
+    password: "password"
+    table-prefix: "joinsounds_"
+
+# Cooldown Settings
+cooldowns:
+  # Enable cooldowns to prevent spam
+  enabled: true
+  
+  # Cooldown time in seconds between sound changes
+  change-sound-cooldown: 30
+  
+  # Cooldown time in seconds between join sounds for the same player
+  # (prevents rejoining spam)
+  rejoin-cooldown: 5
+
+# Advanced Settings
+advanced:
+  # Check for plugin updates on startup
+  check-updates: true
+  
+  # Send anonymous usage statistics
+  metrics: true
+  
+  # Maximum number of sounds a player can have access to
+  # -1 for unlimited
+  max-sounds-per-player: -1
+  
+  # Enable sound categories for better organization
+  enable-categories: false

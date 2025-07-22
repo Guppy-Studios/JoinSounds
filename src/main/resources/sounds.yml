@@ -1,0 +1,62 @@
+# JoinSounds - Available Sounds Configuration
+# Define all available join sounds and their properties
+
+# Available Sounds
+# Each sound must correspond to a sound registered in Nexo's sounds.yml
+sounds:
+  # Example with all possible options
+  bell_chime:
+    # Display name shown in GUI and messages
+    display-name: "&7Bell Chime"
+    # Nexo sound ID (must match exactly with Nexo's sounds)
+    nexo-sound-id: "nexo:ui.bell_chime"
+    # Permission required to use this sound
+    permission: "joinsounds.sound.bell"
+    # Description shown in GUI lore
+    description:
+      - "&7A gentle bell sound"
+      - "&7Perfect for peaceful entrances"
+    # GUI display item settings
+    gui-item:
+      material: "BELL"
+      item-model: bell      # Optional: item-model if given is first preference in item loading
+      custom-model-data: 0  # Optional: if no item-model is present but cmd is then cmd is used.
+      enchanted: false      # Optional: adds enchant glint
+    # Sound properties (optional - overrides config.yml defaults)
+    volume: 0.8     # 0.0 to 1.0
+    pitch: 1.0      # 0.5 to 2.0
+    radius: 16      # blocks
+    # Whether this sound is enabled
+    enabled: true
+    # Optional: hide from GUI (for admin/special sounds)
+    hidden: false
+    # Optional: seasonal availability
+    seasonal:
+      start-date: "12-01"  # MM-DD format
+      end-date: "12-31"    # MM-DD format
+
+  # Simple example
+  golden_chime:
+    display-name: "&6Golden Chime"
+    nexo-sound-id: "nexo:vip.golden_chime"
+    permission: "joinsounds.sound.golden"
+    description:
+      - "&6Luxurious golden bell sound"
+    gui-item:
+      material: "GOLD_NUGGET"
+      enchanted: true
+    enabled: true
+
+  # Admin-only hidden sound
+  admin_entrance:
+    display-name: "&4Admin Entrance"
+    nexo-sound-id: "nexo:admin.epic_entrance"
+    permission: "joinsounds.admin"
+    description:
+      - "&4Epic admin entrance sound"
+    gui-item:
+      material: "COMMAND_BLOCK"
+    volume: 1.0
+    radius: 50
+    enabled: true
+    hidden: true
