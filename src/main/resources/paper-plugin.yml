@@ -1,0 +1,9 @@
+name: JoinSounds
+version: '${version}'
+main: com.tenshiku.joinsounds.JoinSounds
+api-version: '1.21'
+dependencies:
+  - name: Nexo
+    required: true
+authors: [tenshiku]
+description: Custom join sounds with permission-based access and radius-limited playback
