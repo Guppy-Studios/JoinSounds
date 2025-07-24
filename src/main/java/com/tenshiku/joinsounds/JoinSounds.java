@@ -21,7 +21,6 @@ public final class JoinSounds extends JavaPlugin {
 
         getLogger().info("Starting JoinSounds plugin...");
 
-        // Check if Nexo is loaded
         if (getServer().getPluginManager().getPlugin("Nexo") == null) {
             getLogger().severe("Nexo plugin not found! This plugin requires Nexo to function properly.");
             getLogger().severe("Disabling JoinSounds...");
@@ -29,21 +28,16 @@ public final class JoinSounds extends JavaPlugin {
             return;
         }
 
-        // Initialize managers in order
         try {
             this.configManager = new ConfigManager(this);
-            this.soundManager = new SoundManager(this);
-            this.playerDataManager = new PlayerDataManager(this);
-
-            getLogger().info("Managers initialized successfully!");
+            getLogger().info("ConfigManager initialized!");
         } catch (Exception e) {
-            getLogger().severe("Failed to initialize managers: " + e.getMessage());
+            getLogger().severe("Failed to initialize ConfigManager: " + e.getMessage());
             e.printStackTrace();
             getServer().getPluginManager().disablePlugin(this);
             return;
         }
 
-        // Load configurations
         try {
             configManager.loadConfigs();
             getLogger().info("Configurations loaded!");
@@ -54,23 +48,51 @@ public final class JoinSounds extends JavaPlugin {
             return;
         }
 
-        // Register commands
         try {
-            JoinSoundCommand commandExecutor = new JoinSoundCommand(this);
-            org.bukkit.command.PluginCommand command = getCommand("joinsound");
-            if (command != null) {
-                command.setExecutor(commandExecutor);
-                command.setTabCompleter(commandExecutor);
-                getLogger().info("Commands registered!");
-            } else {
-                getLogger().severe("Failed to register joinsound command - not found in plugin.yml");
-            }
+            this.soundManager = new SoundManager(this);
+            this.playerDataManager = new PlayerDataManager(this);
+
+            getLogger().info("All managers initialized successfully!");
         } catch (Exception e) {
-            getLogger().severe("Failed to register commands: " + e.getMessage());
+            getLogger().severe("Failed to initialize managers: " + e.getMessage());
             e.printStackTrace();
+            getServer().getPluginManager().disablePlugin(this);
+            return;
         }
 
-        // Register listeners
+        JoinSoundCommand commandExecutor = new JoinSoundCommand(this);
+
+        getServer().getScheduler().runTask(this, () -> {
+            try {
+                java.lang.reflect.Method getCommandMapMethod = getServer().getClass().getMethod("getCommandMap");
+                org.bukkit.command.CommandMap commandMap = (org.bukkit.command.CommandMap) getCommandMapMethod.invoke(getServer());
+
+                org.bukkit.command.Command joinSoundCommand = new org.bukkit.command.Command("joinsound") {
+                    @Override
+                    public boolean execute(org.bukkit.command.CommandSender sender, String commandLabel, String[] args) {
+                        return commandExecutor.onCommand(sender, this, commandLabel, args);
+                    }
+
+                    @Override
+                    public java.util.List<String> tabComplete(org.bukkit.command.CommandSender sender, String alias, String[] args) {
+                        return commandExecutor.onTabComplete(sender, this, alias, args);
+                    }
+                };
+
+                joinSoundCommand.setDescription("Manage your join sound");
+                joinSoundCommand.setUsage("/joinsound [set|remove|preview|list|info|reload] [sound]");
+                joinSoundCommand.setAliases(java.util.Arrays.asList("js", "joinmusic"));
+                joinSoundCommand.setPermission("joinsounds.use");
+
+                commandMap.register("joinsounds", joinSoundCommand);
+
+                getLogger().info("Commands registered successfully!");
+            } catch (Exception e) {
+                getLogger().severe("Failed to register commands: " + e.getMessage());
+                e.printStackTrace();
+            }
+        });
+
         try {
             getServer().getPluginManager().registerEvents(new PlayerJoinListener(this), this);
             getLogger().info("Event listeners registered!");
@@ -79,22 +101,18 @@ public final class JoinSounds extends JavaPlugin {
             e.printStackTrace();
         }
 
-        // Plugin startup complete
         getLogger().info("JoinSounds plugin has been enabled successfully!");
         getLogger().info("Nexo integration active!");
 
-        // Display some stats
         if (configManager.isDebugMode()) {
             getLogger().info("Debug mode is enabled");
             getLogger().info("Loaded " + soundManager.getAvailableSoundIds().size() + " sounds");
         }
     }
 
-    @Override
     public void onDisable() {
         getLogger().info("Disabling JoinSounds plugin...");
 
-        // Save any pending player data
         if (playerDataManager != null) {
             try {
                 playerDataManager.saveAll();
@@ -105,7 +123,6 @@ public final class JoinSounds extends JavaPlugin {
             }
         }
 
-        // Clear static instance
         instance = null;
 
         getLogger().info("JoinSounds plugin has been disabled!");
@@ -151,13 +168,8 @@ public final class JoinSounds extends JavaPlugin {
         try {
             getLogger().info("Reloading JoinSounds plugin...");
 
-            // Reload configurations
             configManager.reloadConfigs();
-
-            // Reload sounds
             soundManager.loadSounds();
-
-            // Reload player data
             playerDataManager.loadPlayerData();
 
             getLogger().info("Plugin reloaded successfully!");

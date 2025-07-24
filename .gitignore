@@ -562,3 +562,17 @@ server/commands.yml
 server/bukkit.yml
 server/banned-players.json
 server/banned-ips.json
+server/world/stats/2e51bf35-fd95-4279-b4fe-a8bdecb62f3f.json
+server/world/poi/r.0.0.mca
+server/world/playerdata/2e51bf35-fd95-4279-b4fe-a8bdecb62f3f.dat_old
+server/world/playerdata/2e51bf35-fd95-4279-b4fe-a8bdecb62f3f.dat
+server/world/entities/r.-1.0.mca
+server/world/entities/r.-1.-1.mca
+server/world/advancements/2e51bf35-fd95-4279-b4fe-a8bdecb62f3f.json
+server/plugins/Nexo/paintings.yml
+server/plugins/JoinSounds/sounds.yml
+server/plugins/JoinSounds/playerdata.yml
+server/plugins/JoinSounds/messages.yml
+server/plugins/JoinSounds/config.yml
+server/logs/2025-07-24-5.log.gz
+server/logs/2025-07-24-4.log.gz
