@@ -52,6 +52,8 @@ public final class JoinSounds extends JavaPlugin {
             this.soundManager = new SoundManager(this);
             this.playerDataManager = new PlayerDataManager(this);
 
+            soundManager.loadSounds();
+
             getLogger().info("All managers initialized successfully!");
         } catch (Exception e) {
             getLogger().severe("Failed to initialize managers: " + e.getMessage());
@@ -107,6 +109,8 @@ public final class JoinSounds extends JavaPlugin {
         if (configManager.isDebugMode()) {
             getLogger().info("Debug mode is enabled");
             getLogger().info("Loaded " + soundManager.getAvailableSoundIds().size() + " sounds");
+            getLogger().info("Enabled sounds: " + soundManager.getEnabledSoundCount());
+            getLogger().info("Storage type: " + playerDataManager.getStorageInfo());
         }
     }
 
@@ -128,42 +132,22 @@ public final class JoinSounds extends JavaPlugin {
         getLogger().info("JoinSounds plugin has been disabled!");
     }
 
-    /**
-     * Get the main plugin instance
-     * @return JoinSounds instance
-     */
     public static JoinSounds getInstance() {
         return instance;
     }
 
-    /**
-     * Get the configuration manager
-     * @return ConfigManager instance
-     */
     public ConfigManager getConfigManager() {
         return configManager;
     }
 
-    /**
-     * Get the sound manager
-     * @return SoundManager instance
-     */
     public SoundManager getSoundManager() {
         return soundManager;
     }
 
-    /**
-     * Get the player data manager
-     * @return PlayerDataManager instance
-     */
     public PlayerDataManager getPlayerDataManager() {
         return playerDataManager;
     }
 
-    /**
-     * Reload all plugin configurations and managers
-     * Used by admin reload command
-     */
     public void reloadPlugin() {
         try {
             getLogger().info("Reloading JoinSounds plugin...");

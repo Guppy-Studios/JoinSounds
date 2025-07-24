@@ -3,14 +3,11 @@ package com.tenshiku.joinsounds.managers;
 import com.tenshiku.joinsounds.JoinSounds;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
-/**
- * Manages all configuration files for the plugin
- */
+
 public class ConfigManager {
 
     private final JoinSounds plugin;
@@ -25,24 +22,12 @@ public class ConfigManager {
         this.plugin = plugin;
     }
 
-    /**
-     * Load all configuration files
-     */
     public void loadConfigs() {
         plugin.getLogger().info("Loading configuration files...");
-
-        // Load main config.yml
         loadMainConfig();
-
-        // Load sounds.yml
         loadSoundsConfig();
-
-        // Load messages.yml
         loadMessagesConfig();
-
         plugin.getLogger().info("Configuration files loaded successfully!");
-
-        // Display some config info if debug is enabled
         if (isDebugMode()) {
             plugin.getLogger().info("Debug mode enabled");
             plugin.getLogger().info("Default radius: " + getDefaultRadius());
@@ -51,15 +36,12 @@ public class ConfigManager {
         }
     }
 
-    /**
-     * Load the main config.yml file
-     */
+
     private void loadMainConfig() {
         plugin.saveDefaultConfig();
         plugin.reloadConfig();
         this.config = plugin.getConfig();
 
-        // Validate important settings
         if (config.getInt("sounds.default-radius") < 1) {
             plugin.getLogger().warning("Invalid default-radius in config.yml, using default value of 16");
         }
@@ -69,9 +51,7 @@ public class ConfigManager {
         }
     }
 
-    /**
-     * Load the sounds.yml configuration file
-     */
+
     private void loadSoundsConfig() {
         soundsFile = new File(plugin.getDataFolder(), "sounds.yml");
         if (!soundsFile.exists()) {
@@ -80,15 +60,11 @@ public class ConfigManager {
         }
         soundsConfig = YamlConfiguration.loadConfiguration(soundsFile);
 
-        // Validate sounds config
         if (soundsConfig.getConfigurationSection("sounds") == null) {
             plugin.getLogger().warning("No 'sounds' section found in sounds.yml!");
         }
     }
 
-    /**
-     * Load the messages.yml configuration file
-     */
     private void loadMessagesConfig() {
         messagesFile = new File(plugin.getDataFolder(), "messages.yml");
         if (!messagesFile.exists()) {
@@ -97,15 +73,11 @@ public class ConfigManager {
         }
         messagesConfig = YamlConfiguration.loadConfiguration(messagesFile);
 
-        // Validate messages config
         if (messagesConfig.getConfigurationSection("messages") == null) {
             plugin.getLogger().warning("No 'messages' section found in messages.yml!");
         }
     }
 
-    /**
-     * Reload all configuration files
-     */
     public void reloadConfigs() {
         plugin.getLogger().info("Reloading configuration files...");
 
@@ -117,9 +89,6 @@ public class ConfigManager {
         plugin.getLogger().info("Configuration files reloaded!");
     }
 
-    /**
-     * Save the sounds configuration file
-     */
     public void saveSoundsConfig() {
         try {
             soundsConfig.save(soundsFile);
@@ -128,9 +97,6 @@ public class ConfigManager {
         }
     }
 
-    /**
-     * Save the messages configuration file
-     */
     public void saveMessagesConfig() {
         try {
             messagesConfig.save(messagesFile);
@@ -139,7 +105,6 @@ public class ConfigManager {
         }
     }
 
-    // Configuration getters
     public FileConfiguration getConfig() {
         return config;
     }
@@ -152,7 +117,6 @@ public class ConfigManager {
         return messagesConfig;
     }
 
-    // General Settings
     public boolean isPluginEnabled() {
         return config.getBoolean("general.enabled", true);
     }
@@ -165,7 +129,6 @@ public class ConfigManager {
         return config.getBoolean("general.debug", false);
     }
 
-    // Sound Settings
     public int getDefaultRadius() {
         return Math.max(1, config.getInt("sounds.default-radius", 16));
     }
@@ -194,7 +157,6 @@ public class ConfigManager {
         return config.getBoolean("sounds.play-to-self", true);
     }
 
-    // World Settings
     public List<String> getEnabledWorlds() {
         return config.getStringList("worlds.enabled-worlds");
     }
@@ -207,16 +169,13 @@ public class ConfigManager {
         List<String> enabledWorlds = getEnabledWorlds();
         List<String> disabledWorlds = getDisabledWorlds();
 
-        // If enabled-worlds list is not empty, world must be in it
         if (!enabledWorlds.isEmpty()) {
             return enabledWorlds.contains(worldName);
         }
 
-        // Otherwise, world is enabled unless in disabled-worlds
         return !disabledWorlds.contains(worldName);
     }
 
-    // Permission Settings
     public String getUsePermission() {
         return config.getString("permissions.use-permission", "joinsounds.use");
     }
@@ -233,14 +192,12 @@ public class ConfigManager {
         return config.getString("permissions.custom-radius-permission", "joinsounds.radius.custom");
     }
 
-    // GUI Settings
     public String getGuiTitle() {
         return config.getString("gui.title", "&6Choose Your Join Sound").replace("&", "§");
     }
 
     public int getGuiSize() {
         int size = config.getInt("gui.size", 27);
-        // Ensure size is multiple of 9 and within valid range
         if (size % 9 != 0 || size < 9 || size > 54) {
             return 27;
         }
@@ -254,7 +211,6 @@ public class ConfigManager {
     // Storage Settings
     public String getStorageType() {
         String type = config.getString("storage.type", "YAML").toUpperCase();
-        // Validate storage type
         if (!type.equals("YAML") && !type.equals("H2") && !type.equals("MYSQL") && !type.equals("MARIADB")) {
             plugin.getLogger().warning("Invalid storage type '" + type + "', defaulting to YAML");
             return "YAML";
@@ -266,7 +222,6 @@ public class ConfigManager {
         return config.getString("storage.yaml.file-name", "playerdata.yml");
     }
 
-    // H2 Database Settings
     public String getH2FileName() {
         return config.getString("storage.h2.file-name", "joinsounds.db");
     }
@@ -279,7 +234,6 @@ public class ConfigManager {
         return config.getString("storage.h2.password", "");
     }
 
-    // MySQL Database Settings
     public String getMySQLHost() {
         return config.getString("storage.mysql.host", "localhost");
     }
@@ -312,7 +266,6 @@ public class ConfigManager {
         return config.getInt("storage.mysql.connection-timeout", 30000);
     }
 
-    // MariaDB Database Settings (extends MySQL settings)
     public String getMariaDBHost() {
         return config.getString("storage.mariadb.host", getMySQLHost());
     }
@@ -345,7 +298,6 @@ public class ConfigManager {
         return config.getInt("storage.mariadb.connection-timeout", getMySQLConnectionTimeout());
     }
 
-    // Generic database settings getter for current storage type
     public String getDatabaseHost() {
         String type = getStorageType();
         if (type.equals("MYSQL")) return getMySQLHost();
@@ -391,7 +343,6 @@ public class ConfigManager {
         return "joinsounds_";
     }
 
-    // Cooldown Settings
     public boolean areCooldownsEnabled() {
         return config.getBoolean("cooldowns.enabled", true);
     }
@@ -404,7 +355,6 @@ public class ConfigManager {
         return Math.max(0, config.getInt("cooldowns.rejoin-cooldown", 5));
     }
 
-    // Advanced Settings
     public boolean shouldCheckUpdates() {
         return config.getBoolean("advanced.check-updates", true);
     }
@@ -417,7 +367,6 @@ public class ConfigManager {
         return config.getInt("advanced.max-sounds-per-player", -1);
     }
 
-    // Message Methods
     public String getMessage(String path) {
         String message = messagesConfig.getString("messages." + path, "Message not found: " + path);
         return getPrefix() + message.replace("&", "§");

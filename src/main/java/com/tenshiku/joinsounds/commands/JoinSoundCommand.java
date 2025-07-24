@@ -8,16 +8,13 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 import org.bukkit.util.StringUtil;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-/**
- * Handles the /joinsound command and all its subcommands
- */
+
 public class JoinSoundCommand implements CommandExecutor, TabCompleter {
 
     private final JoinSounds plugin;
@@ -36,13 +33,11 @@ public class JoinSoundCommand implements CommandExecutor, TabCompleter {
 
         Player player = (Player) sender;
 
-        // Check basic permission
         if (!player.hasPermission(plugin.getConfigManager().getUsePermission())) {
             player.sendMessage(plugin.getConfigManager().getMessage("no-permission"));
             return true;
         }
 
-        // Check if plugin is enabled
         if (!plugin.getConfigManager().isPluginEnabled()) {
             player.sendMessage(plugin.getConfigManager().getPrefix() + "§cPlugin is currently disabled.");
             return true;
@@ -100,7 +95,6 @@ public class JoinSoundCommand implements CommandExecutor, TabCompleter {
                 break;
 
             default:
-                // Try to set the sound directly
                 setSound(player, args[0]);
                 break;
         }
@@ -108,25 +102,20 @@ public class JoinSoundCommand implements CommandExecutor, TabCompleter {
         return true;
     }
 
-    /**
-     * Set a player's join sound
-     */
+
     private void setSound(Player player, String soundId) {
-        // Check cooldown
         if (plugin.getPlayerDataManager().isOnCooldown(player.getUniqueId(), "change")) {
             long remaining = plugin.getPlayerDataManager().getRemainingCooldown(player.getUniqueId(), "change");
             player.sendMessage(plugin.getConfigManager().getMessage("cooldown-active", "time", String.valueOf(remaining)));
             return;
         }
 
-        // Check if sound exists
         JoinSound sound = plugin.getSoundManager().getSound(soundId);
         if (sound == null) {
             player.sendMessage(plugin.getConfigManager().getMessage("sound-not-found", "sound", soundId));
             return;
         }
 
-        // Check if sound is available for selection
         if (!sound.isAvailableForSelection()) {
             if (sound.isHidden()) {
                 player.sendMessage(plugin.getConfigManager().getMessage("sound-not-found", "sound", soundId));
@@ -138,27 +127,22 @@ public class JoinSoundCommand implements CommandExecutor, TabCompleter {
             return;
         }
 
-        // Check permission for specific sound
         if (!player.hasPermission(sound.getPermission())) {
             player.sendMessage(plugin.getConfigManager().getMessage("no-permission"));
             return;
         }
 
-        // Set the sound
         plugin.getPlayerDataManager().setPlayerSound(player.getUniqueId(), soundId);
         player.sendMessage(plugin.getConfigManager().getMessage("sound-changed", "sound", sound.getDisplayName()));
 
-        // Play preview if enabled
         if (plugin.getConfigManager().isPreviewEnabled()) {
             plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
                 plugin.getSoundManager().previewSound(player, soundId);
-            }, 10L); // Small delay
+            }, 10L);
         }
     }
 
-    /**
-     * Remove a player's join sound
-     */
+
     private void removeSound(Player player) {
         if (!plugin.getPlayerDataManager().hasPlayerSound(player.getUniqueId())) {
             player.sendMessage(plugin.getConfigManager().getPrefix() + "§cYou don't have a join sound set.");
@@ -169,9 +153,7 @@ public class JoinSoundCommand implements CommandExecutor, TabCompleter {
         player.sendMessage(plugin.getConfigManager().getMessage("sound-disabled"));
     }
 
-    /**
-     * Preview a sound
-     */
+
     private void previewSound(Player player, String soundId) {
         JoinSound sound = plugin.getSoundManager().getSound(soundId);
         if (sound == null) {
@@ -179,7 +161,6 @@ public class JoinSoundCommand implements CommandExecutor, TabCompleter {
             return;
         }
 
-        // Check if sound is available
         if (!sound.isAvailableForSelection()) {
             player.sendMessage(plugin.getConfigManager().getPrefix() + "§cThat sound is not available for preview.");
             return;
@@ -194,9 +175,7 @@ public class JoinSoundCommand implements CommandExecutor, TabCompleter {
         player.sendMessage(plugin.getConfigManager().getPrefix() + "§aPreviewing sound: §6" + sound.getDisplayName());
     }
 
-    /**
-     * List available sounds for the player
-     */
+
     private void listSounds(Player player) {
         Map<String, JoinSound> accessibleSounds = plugin.getSoundManager().getAccessibleSounds(player);
 
@@ -211,7 +190,6 @@ public class JoinSoundCommand implements CommandExecutor, TabCompleter {
             JoinSound sound = entry.getValue();
             String soundId = entry.getKey();
 
-            // Format: "- bell (Bell Chime) - A gentle bell sound"
             StringBuilder line = new StringBuilder("§7- §6" + soundId);
             if (!sound.getDisplayName().equals(soundId)) {
                 line.append(" §7(").append(sound.getDisplayName()).append("§7)");
@@ -228,9 +206,7 @@ public class JoinSoundCommand implements CommandExecutor, TabCompleter {
         player.sendMessage("§7Use §6/joinsound preview <sound> §7to test a sound");
     }
 
-    /**
-     * Show player's current sound info
-     */
+
     private void showInfo(Player player) {
         String currentSound = plugin.getPlayerDataManager().getPlayerSound(player.getUniqueId());
 
@@ -264,9 +240,7 @@ public class JoinSoundCommand implements CommandExecutor, TabCompleter {
         player.sendMessage("§7Use §6/joinsound preview " + currentSound + " §7to test it");
     }
 
-    /**
-     * Reload plugin configurations
-     */
+
     private void reloadConfigs(Player player) {
         try {
             plugin.reloadPlugin();
@@ -277,9 +251,7 @@ public class JoinSoundCommand implements CommandExecutor, TabCompleter {
         }
     }
 
-    /**
-     * Show help message
-     */
+
     private void showHelp(Player player) {
         player.sendMessage(plugin.getConfigManager().getPrefix() + "§6JoinSounds Commands:");
         player.sendMessage("§6/joinsound set <sound> §7- Set your join sound");
@@ -306,10 +278,8 @@ public class JoinSoundCommand implements CommandExecutor, TabCompleter {
         List<String> completions = new ArrayList<>();
 
         if (args.length == 1) {
-            // Complete subcommands
             StringUtil.copyPartialMatches(args[0], subCommands, completions);
 
-            // Also include sound IDs for direct setting
             Map<String, JoinSound> accessibleSounds = plugin.getSoundManager().getAccessibleSounds(player);
             StringUtil.copyPartialMatches(args[0], accessibleSounds.keySet(), completions);
 
@@ -317,7 +287,6 @@ public class JoinSoundCommand implements CommandExecutor, TabCompleter {
             String subCommand = args[0].toLowerCase();
 
             if ("set".equals(subCommand) || "preview".equals(subCommand)) {
-                // Complete with accessible sound IDs
                 Map<String, JoinSound> accessibleSounds = plugin.getSoundManager().getAccessibleSounds(player);
                 StringUtil.copyPartialMatches(args[1], accessibleSounds.keySet(), completions);
             }

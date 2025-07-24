@@ -20,17 +20,14 @@ public class PlayerJoinListener implements Listener {
     public void onPlayerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
 
-        // Check if plugin is enabled
         if (!plugin.getConfigManager().isPluginEnabled()) {
             return;
         }
 
-        // Debug logging
         if (plugin.getConfigManager().isDebugMode()) {
             plugin.getLogger().info("Player " + player.getName() + " joined, checking for join sound...");
         }
 
-        // Check if player has a selected sound
         String soundId = plugin.getPlayerDataManager().getPlayerSound(player.getUniqueId());
         if (soundId == null || soundId.isEmpty()) {
             if (plugin.getConfigManager().isDebugMode()) {
@@ -39,17 +36,14 @@ public class PlayerJoinListener implements Listener {
             return;
         }
 
-        // Verify the sound still exists
         if (!plugin.getSoundManager().hasSound(soundId)) {
             if (plugin.getConfigManager().isDebugMode()) {
                 plugin.getLogger().warning("Player " + player.getName() + " has invalid sound: " + soundId);
             }
-            // Remove invalid sound
             plugin.getPlayerDataManager().removePlayerSound(player.getUniqueId());
             return;
         }
 
-        // Check basic permission
         String usePermission = plugin.getConfigManager().getUsePermission();
         if (!player.hasPermission(usePermission)) {
             if (plugin.getConfigManager().isDebugMode()) {
@@ -58,7 +52,6 @@ public class PlayerJoinListener implements Listener {
             return;
         }
 
-        // Check if sounds are enabled in this world (SoundManager handles bypass permission)
         if (!plugin.getConfigManager().isWorldEnabled(player.getWorld().getName())
                 && !player.hasPermission(plugin.getConfigManager().getBypassWorldPermission())) {
             if (plugin.getConfigManager().isDebugMode()) {
@@ -67,7 +60,6 @@ public class PlayerJoinListener implements Listener {
             return;
         }
 
-        // Play the sound (SoundManager will handle all other checks)
         try {
             plugin.getSoundManager().playJoinSound(player, soundId);
 

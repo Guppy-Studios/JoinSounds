@@ -23,9 +23,6 @@ public class SoundManager {
         this.soundAliases = new HashMap<>();
     }
 
-    /**
-     * Load all sounds from the sounds.yml configuration
-     */
     public void loadSounds() {
         plugin.getLogger().info("Loading sounds from configuration...");
 
@@ -41,7 +38,6 @@ public class SoundManager {
         int loadedCount = 0;
         int skippedCount = 0;
 
-        // Load individual sounds
         for (String soundId : soundsSection.getKeys(false)) {
             ConfigurationSection soundSection = soundsSection.getConfigurationSection(soundId);
             if (soundSection == null) {
@@ -67,7 +63,6 @@ public class SoundManager {
             }
         }
 
-        // Load aliases
         loadAliases();
 
         plugin.getLogger().info("Loaded " + loadedCount + " sounds" +
@@ -75,9 +70,6 @@ public class SoundManager {
                 " and " + soundAliases.size() + " aliases");
     }
 
-    /**
-     * Load sound aliases from configuration
-     */
     private void loadAliases() {
         ConfigurationSection aliasSection = plugin.getConfigManager().getSoundsConfig().getConfigurationSection("aliases");
         if (aliasSection == null) {
@@ -100,23 +92,17 @@ public class SoundManager {
         }
     }
 
-    /**
-     * Get a sound by ID or alias
-     * @param identifier Sound ID or alias
-     * @return JoinSound or null if not found
-     */
+
     public JoinSound getSound(String identifier) {
         if (identifier == null) {
             return null;
         }
 
-        // Try direct sound ID first
         JoinSound sound = availableSounds.get(identifier);
         if (sound != null) {
             return sound;
         }
 
-        // Try alias (case-insensitive)
         String soundId = soundAliases.get(identifier.toLowerCase());
         if (soundId != null) {
             return availableSounds.get(soundId);
@@ -125,52 +111,30 @@ public class SoundManager {
         return null;
     }
 
-    /**
-     * Get all available sound IDs
-     * @return Set of sound IDs
-     */
+
     public Set<String> getAvailableSoundIds() {
         return availableSounds.keySet();
     }
 
-    /**
-     * Get all sounds that are available for selection (enabled, not hidden, seasonal check)
-     * @return Map of available sounds
-     */
     public Map<String, JoinSound> getAvailableSounds() {
         return availableSounds.entrySet().stream()
                 .filter(entry -> entry.getValue().isAvailableForSelection())
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
-    /**
-     * Get all sounds regardless of availability
-     * @return Map of all sounds
-     */
     public Map<String, JoinSound> getAllSounds() {
         return new HashMap<>(availableSounds);
     }
 
-    /**
-     * Check if a sound exists by ID or alias
-     * @param identifier Sound ID or alias
-     * @return true if sound exists
-     */
     public boolean hasSound(String identifier) {
         return getSound(identifier) != null;
     }
 
-    /**
-     * Play a join sound for a player
-     * @param player The player who joined
-     * @param soundId The sound ID to play
-     */
     public void playJoinSound(Player player, String soundId) {
         if (!plugin.getConfigManager().isPluginEnabled()) {
             return;
         }
 
-        // Check if sounds are enabled in this world
         if (!isWorldEnabled(player.getWorld().getName(), player)) {
             if (plugin.getConfigManager().isDebugMode()) {
                 plugin.getLogger().info("Sounds disabled in world: " + player.getWorld().getName());
@@ -186,7 +150,6 @@ public class SoundManager {
             return;
         }
 
-        // Check if sound is enabled and available
         if (!sound.isEnabled()) {
             if (plugin.getConfigManager().isDebugMode()) {
                 plugin.getLogger().info("Sound " + soundId + " is disabled");
@@ -194,7 +157,6 @@ public class SoundManager {
             return;
         }
 
-        // Check seasonal availability
         if (!sound.isSeasonallyAvailable()) {
             if (plugin.getConfigManager().isDebugMode()) {
                 plugin.getLogger().info("Sound " + soundId + " is not seasonally available");
@@ -202,7 +164,6 @@ public class SoundManager {
             return;
         }
 
-        // Check if player has permission
         if (!player.hasPermission(sound.getPermission())) {
             if (plugin.getConfigManager().isDebugMode()) {
                 plugin.getLogger().info("Player " + player.getName() + " lacks permission for sound: " + soundId);
@@ -210,7 +171,6 @@ public class SoundManager {
             return;
         }
 
-        // Check rejoin cooldown
         if (plugin.getPlayerDataManager().isOnCooldown(player.getUniqueId(), "rejoin")) {
             if (plugin.getConfigManager().isDebugMode()) {
                 plugin.getLogger().info("Player " + player.getName() + " is on rejoin cooldown");
@@ -218,7 +178,6 @@ public class SoundManager {
             return;
         }
 
-        // Play the sound with delay
         int delay = plugin.getConfigManager().getPlayDelay();
         if (delay > 0) {
             plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
@@ -231,11 +190,6 @@ public class SoundManager {
         }
     }
 
-    /**
-     * Actually play the sound to nearby players
-     * @param player The player who joined
-     * @param sound The sound to play
-     */
     private void playSound(Player player, JoinSound sound) {
         Location location = player.getLocation();
         String nexoSoundId = sound.getNexoSoundId();
@@ -246,12 +200,10 @@ public class SoundManager {
         try {
             int playersInRange = 0;
 
-            // Play to nearby players
             for (Player nearbyPlayer : player.getWorld().getPlayers()) {
                 double distance = nearbyPlayer.getLocation().distance(location);
                 if (distance <= radius) {
                     try {
-                        // Try to play Nexo sound
                         nearbyPlayer.playSound(location, nexoSoundId, volume, pitch);
                         playersInRange++;
                     } catch (Exception e) {
@@ -259,7 +211,6 @@ public class SoundManager {
                             plugin.getLogger().warning("Failed to play Nexo sound " + nexoSoundId +
                                     " to " + nearbyPlayer.getName() + ", trying fallback: " + e.getMessage());
                         }
-                        // Fallback to vanilla sound
                         try {
                             nearbyPlayer.playSound(location, Sound.BLOCK_NOTE_BLOCK_BELL, volume, pitch);
                             playersInRange++;
@@ -270,7 +221,6 @@ public class SoundManager {
                 }
             }
 
-            // Play to the joining player if enabled
             if (plugin.getConfigManager().playToSelf()) {
                 try {
                     player.playSound(location, nexoSoundId, volume, pitch);
@@ -298,11 +248,6 @@ public class SoundManager {
         }
     }
 
-    /**
-     * Preview a sound for a player (only plays to that player)
-     * @param player The player to preview the sound for
-     * @param soundId The sound ID to preview
-     */
     public void previewSound(Player player, String soundId) {
         JoinSound sound = getSound(soundId);
         if (sound == null) {
@@ -316,7 +261,6 @@ public class SoundManager {
             if (plugin.getConfigManager().isDebugMode()) {
                 plugin.getLogger().warning("Failed to preview Nexo sound, using fallback: " + e.getMessage());
             }
-            // Fallback to vanilla sound
             try {
                 player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BELL,
                         (float) sound.getVolume(), (float) sound.getPitch());
@@ -326,14 +270,7 @@ public class SoundManager {
         }
     }
 
-    /**
-     * Check if sounds are enabled in a specific world for a player
-     * @param worldName The world name
-     * @param player The player (for bypass permission check)
-     * @return true if enabled
-     */
     private boolean isWorldEnabled(String worldName, Player player) {
-        // Check bypass permission
         if (player.hasPermission(plugin.getConfigManager().getBypassWorldPermission())) {
             return true;
         }
@@ -341,29 +278,16 @@ public class SoundManager {
         return plugin.getConfigManager().isWorldEnabled(worldName);
     }
 
-    /**
-     * Get sounds that a player has permission to use
-     * @param player The player
-     * @return Map of accessible sounds
-     */
     public Map<String, JoinSound> getAccessibleSounds(Player player) {
         return getAvailableSounds().entrySet().stream()
                 .filter(entry -> player.hasPermission(entry.getValue().getPermission()))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
-    /**
-     * Get the total count of loaded sounds
-     * @return Number of sounds
-     */
     public int getSoundCount() {
         return availableSounds.size();
     }
 
-    /**
-     * Get the count of enabled sounds
-     * @return Number of enabled sounds
-     */
     public int getEnabledSoundCount() {
         return (int) availableSounds.values().stream()
                 .filter(JoinSound::isEnabled)

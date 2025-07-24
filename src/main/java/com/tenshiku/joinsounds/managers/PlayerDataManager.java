@@ -19,11 +19,9 @@ public class PlayerDataManager {
     private final Map<UUID, Long> lastSoundChange;
     private final Map<UUID, Long> lastJoinSound;
 
-    // File storage
     private File playerDataFile;
     private FileConfiguration playerDataConfig;
 
-    // Database storage
     private String jdbcUrl;
     private String username;
     private String password;
@@ -40,9 +38,6 @@ public class PlayerDataManager {
         loadPlayerData();
     }
 
-    /**
-     * Initialize storage system based on configuration
-     */
     private void initializeStorage() {
         String storageType = plugin.getConfigManager().getStorageType();
 
@@ -69,9 +64,6 @@ public class PlayerDataManager {
         plugin.getLogger().info("Using " + storageType + " storage for player data");
     }
 
-    /**
-     * Setup YAML file storage
-     */
     private void setupYamlStorage() {
         useDatabase = false;
         String fileName = plugin.getConfigManager().getYamlFileName();
@@ -87,9 +79,6 @@ public class PlayerDataManager {
         }
     }
 
-    /**
-     * Setup H2 database storage
-     */
     private void setupH2Database() {
         useDatabase = true;
         String fileName = plugin.getConfigManager().getH2FileName();
@@ -100,7 +89,6 @@ public class PlayerDataManager {
         password = plugin.getConfigManager().getH2Password();
         tablePrefix = plugin.getConfigManager().getTablePrefix();
 
-        // Load H2 driver
         try {
             Class.forName("org.h2.Driver");
         } catch (ClassNotFoundException e) {
@@ -110,9 +98,7 @@ public class PlayerDataManager {
         }
     }
 
-    /**
-     * Setup MySQL database storage
-     */
+
     private void setupMySQLDatabase() {
         useDatabase = true;
         String host = plugin.getConfigManager().getMySQLHost();
@@ -127,7 +113,6 @@ public class PlayerDataManager {
         password = plugin.getConfigManager().getMySQLPassword();
         tablePrefix = plugin.getConfigManager().getMySQLTablePrefix();
 
-        // Load MySQL driver
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
         } catch (ClassNotFoundException e) {
@@ -137,9 +122,7 @@ public class PlayerDataManager {
         }
     }
 
-    /**
-     * Setup MariaDB database storage
-     */
+
     private void setupMariaDBDatabase() {
         useDatabase = true;
         String host = plugin.getConfigManager().getMariaDBHost();
@@ -154,7 +137,6 @@ public class PlayerDataManager {
         password = plugin.getConfigManager().getMariaDBPassword();
         tablePrefix = plugin.getConfigManager().getMariaDBTablePrefix();
 
-        // Load MariaDB driver
         try {
             Class.forName("org.mariadb.jdbc.Driver");
         } catch (ClassNotFoundException e) {
@@ -169,9 +151,7 @@ public class PlayerDataManager {
         }
     }
 
-    /**
-     * Create database tables if they don't exist
-     */
+
     private void createTables() {
         if (!useDatabase) return;
 
@@ -198,16 +178,12 @@ public class PlayerDataManager {
         }
     }
 
-    /**
-     * Get database connection
-     */
+
     private Connection getConnection() throws SQLException {
         return DriverManager.getConnection(jdbcUrl, username, password);
     }
 
-    /**
-     * Load player data from storage
-     */
+
     public void loadPlayerData() {
         if (useDatabase) {
             loadFromDatabase();
@@ -216,9 +192,7 @@ public class PlayerDataManager {
         }
     }
 
-    /**
-     * Load player data from YAML file
-     */
+
     private void loadFromYaml() {
         if (playerDataFile == null || !playerDataFile.exists()) {
             return;
@@ -253,9 +227,7 @@ public class PlayerDataManager {
         plugin.getLogger().info("Loaded data for " + playerSounds.size() + " players from YAML");
     }
 
-    /**
-     * Load player data from database
-     */
+
     private void loadFromDatabase() {
         String selectSQL = "SELECT uuid, sound, last_change, last_join FROM " + tablePrefix + "players";
 
@@ -295,9 +267,7 @@ public class PlayerDataManager {
         }
     }
 
-    /**
-     * Save all player data
-     */
+
     public void saveAll() {
         if (useDatabase) {
             saveToDatabaseAsync();
@@ -306,20 +276,16 @@ public class PlayerDataManager {
         }
     }
 
-    /**
-     * Save player data to YAML file
-     */
+
     private void saveToYaml() {
         if (playerDataConfig == null || playerDataFile == null) {
             return;
         }
 
-        // Clear existing data
         for (String key : playerDataConfig.getKeys(false)) {
             playerDataConfig.set(key, null);
         }
 
-        // Save current data
         for (Map.Entry<UUID, String> entry : playerSounds.entrySet()) {
             String uuidString = entry.getKey().toString();
             playerDataConfig.set(uuidString + ".sound", entry.getValue());
@@ -343,16 +309,10 @@ public class PlayerDataManager {
         }
     }
 
-    /**
-     * Save player data to database asynchronously
-     */
     private void saveToDatabaseAsync() {
         CompletableFuture.runAsync(() -> saveToDatabase());
     }
 
-    /**
-     * Save player data to database
-     */
     private void saveToDatabase() {
         String upsertSQL;
         String storageType = plugin.getConfigManager().getStorageType();
@@ -389,7 +349,6 @@ public class PlayerDataManager {
         }
     }
 
-    // Player data methods
     public String getPlayerSound(UUID uuid) {
         return playerSounds.get(uuid);
     }
@@ -403,7 +362,6 @@ public class PlayerDataManager {
             lastSoundChange.put(uuid, System.currentTimeMillis());
         }
 
-        // Auto-save
         plugin.getServer().getScheduler().runTaskAsynchronously(plugin, this::saveAll);
     }
 
@@ -415,13 +373,9 @@ public class PlayerDataManager {
         playerSounds.remove(uuid);
         removePlayerFromStorage(uuid);
 
-        // Auto-save
         plugin.getServer().getScheduler().runTaskAsynchronously(plugin, this::saveAll);
     }
 
-    /**
-     * Remove player from storage completely
-     */
     private void removePlayerFromStorage(UUID uuid) {
         if (useDatabase) {
             String deleteSQL = "DELETE FROM " + tablePrefix + "players WHERE uuid = ?";
@@ -435,14 +389,11 @@ public class PlayerDataManager {
                 plugin.getLogger().warning("Failed to remove player from database: " + e.getMessage());
             }
         }
-        // For YAML, removal happens during save
 
-        // Remove from memory
         lastSoundChange.remove(uuid);
         lastJoinSound.remove(uuid);
     }
 
-    // Cooldown methods
     public boolean isOnCooldown(UUID uuid, String cooldownType) {
         if (!plugin.getConfigManager().areCooldownsEnabled()) {
             return false;
@@ -507,7 +458,6 @@ public class PlayerDataManager {
         lastJoinSound.put(uuid, System.currentTimeMillis());
     }
 
-    // Statistics
     public int getPlayerCount() {
         return playerSounds.size();
     }
