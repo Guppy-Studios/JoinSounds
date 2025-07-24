@@ -5,3 +5,10 @@ api-version: '1.21'
 depend: [Nexo]
 authors: [tenshiku]
 description: Custom join sounds with permission-based access and radius-limited playback
+
+commands:
+  joinsound:
+    description: Manage your join sound
+    usage: /joinsound [set|remove|preview|list|info|reload] [sound]
+    aliases: [js, joinmusic]
+    permission: joinsounds.use
